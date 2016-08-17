@@ -106,7 +106,7 @@ public final class TilePopup extends JPopupMenu {
             } else if (activeUnit.getSimpleMoveType(unitTile, tile).isLegal()) {
                 gotoMenuItem = Utility.localizedMenuItem("goToThisTile");
             }
-            if (gotoMenuItem != null) {
+            if (gotoMenuItem != null && unitTile != tile) {
                 gotoMenuItem.addActionListener((ActionEvent ae) -> {
                         if (!freeColClient.currentPlayerIsMyPlayer()) return;
                         Tile currTile = activeUnit.getTile();
