@@ -35,6 +35,8 @@ import javax.swing.JSeparator;
 
 import net.sf.freecol.client.FreeColClient;
 import net.sf.freecol.client.control.InGameController;
+import net.sf.freecol.client.gui.action.ActionManager;
+import net.sf.freecol.client.gui.action.FreeColAction;
 import net.sf.freecol.client.gui.action.UnloadAction;
 import net.sf.freecol.client.gui.panel.ReportPanel;
 import net.sf.freecol.client.gui.panel.Utility;
@@ -50,6 +52,7 @@ import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.StringTemplate;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.util.LogBuilder;
@@ -69,6 +72,7 @@ public final class TilePopup extends JPopupMenu {
     public static final int UNIT_LINES_IN_OTHER_MENUS = 19;
 
     private final FreeColClient freeColClient;
+    private final ActionManager am;
     private final SwingGUI gui;
     private final Canvas canvas;
     private boolean hasAnItem = false;
@@ -87,6 +91,7 @@ public final class TilePopup extends JPopupMenu {
         super(Messages.message(tile.getSimpleLabel()));
 
         this.freeColClient = freeColClient;
+        this.am = freeColClient.getActionManager();
         this.gui = (SwingGUI)freeColClient.getGUI();
         this.canvas = canvas;
 
@@ -181,6 +186,18 @@ public final class TilePopup extends JPopupMenu {
                     hasAnItem = true;
                 }
             }
+
+            if (unitTile == tile && activeUnit.getRole().getId().equals("model.role.pioneer")) {
+                if (hasAnItem) addSeparator();
+                // Insert all Improvements here:
+                for (TileImprovementType type : freeColClient.getGame().getSpecification()
+                         .getTileImprovementTypeList()) {
+                    if (!type.isNatural()) {
+                        add(getMenuItem(type.getSuffix() + "Action"));
+                    }
+                }
+
+            }
             if (hasAnItem) addSeparator();
         }
 
@@ -242,6 +259,34 @@ public final class TilePopup extends JPopupMenu {
         if (lastComponent instanceof JSeparator) {
             remove(lastComponent);
         }
+    }
+
+    /**
+     * Creates a default FreeCol JMenuItem.
+     *
+     * Almost completely copied from FreeColMenu. Removes the accelerator.
+     *
+     * @param actionId The identifier given to the
+     *      {@link ActionManager#getFreeColAction(String) action manager}.
+     * @return The menu item.
+     */
+    private JMenuItem getMenuItem(String actionId) {
+        JMenuItem rtn = null;
+        FreeColAction action = am.getFreeColAction(actionId);
+
+        if (action != null) {
+            rtn = new JMenuItem();
+            rtn.setAction(action);
+            rtn.setOpaque(false);
+
+            if (action.getAccelerator() != null) {
+                rtn.setAccelerator(null);
+            }
+        } else {
+            logger.finest("Could not create menu item. [" + actionId
+                + "] not found.");
+        }
+        return rtn;
     }
 
     /**
