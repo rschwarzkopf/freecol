@@ -110,7 +110,7 @@ public final class DragListener extends MouseAdapter {
         } else {
             if (comp instanceof AbstractGoodsLabel) {
                 AbstractGoodsLabel label = (AbstractGoodsLabel)comp;
-                if (e.isShiftDown()) {
+                if (e.isShiftDown() || e.getButton() == MouseEvent.BUTTON2) {
                     label.setPartialChosen(true);
                 } else if (e.isControlDown()) {
                     label.setFullChosen(true);
